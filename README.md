@@ -108,8 +108,8 @@ to publish; the job search stays private.
 
 ## Stack
 
-Python · Anthropic SDK · `claude-sonnet-4-6` (per-agent overridable via
-`JOBOPS_MODEL`) · server-side `web_search` tool · structured outputs
-(`output_config.format`)
+Python · Anthropic SDK · `claude-sonnet-5` default (switch to
+`claude-opus-4-8` via `JOBOPS_MODEL` or the cockpit's model picker) ·
+server-side `web_search` tool · structured outputs (`output_config.format`)
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the pattern-by-pattern design notes.

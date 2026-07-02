@@ -71,8 +71,12 @@ re-find the same posting harmlessly.
 
 ## 7. Cost design
 
-- Default model `claude-sonnet-4-6` (cost-balanced); any run can override
-  with `JOBOPS_MODEL=claude-opus-4-8` when quality matters more.
+- Default model `claude-sonnet-5` (cost-balanced: near-Opus agentic quality
+  at $3/$15 per MTok, intro $2/$10 through 2026-08-31); any run can override
+  with `JOBOPS_MODEL=claude-opus-4-8` ($5/$25) when quality matters more, or
+  pick per-run from the cockpit's model dropdown. Sonnet 5 runs adaptive
+  thinking by default, which bills into `max_tokens` — output budgets carry
+  headroom for it.
 - Batched processing (`max_jobs_per_process_run`) keeps a single run's
   spend predictable.
 - The gate (see §2) is the biggest lever: most discovered jobs never reach

@@ -5,6 +5,9 @@ Three call shapes, matching the three things agents in this system do:
   ask_structured()  — force a JSON-schema-valid dict back (no parsing guesswork)
   ask_with_search() — give the model the web_search server tool and let it
                       research before answering
+
+Claude 5 note: Sonnet 5 runs adaptive thinking by default and thinking
+bills into max_tokens, so the defaults below carry headroom.
 """
 
 import json
@@ -16,7 +19,7 @@ from .config import MODEL
 _client = anthropic.Anthropic()
 
 
-def ask(prompt: str, system: str = "", max_tokens: int = 4096) -> str:
+def ask(prompt: str, system: str = "", max_tokens: int = 8192) -> str:
     response = _client.messages.create(
         model=MODEL,
         max_tokens=max_tokens,
@@ -26,7 +29,7 @@ def ask(prompt: str, system: str = "", max_tokens: int = 4096) -> str:
     return "".join(b.text for b in response.content if b.type == "text")
 
 
-def ask_structured(prompt: str, schema: dict, system: str = "", max_tokens: int = 4096) -> dict:
+def ask_structured(prompt: str, schema: dict, system: str = "", max_tokens: int = 8192) -> dict:
     """Constrain the response to a JSON schema via output_config.format."""
     response = _client.messages.create(
         model=MODEL,
@@ -40,7 +43,7 @@ def ask_structured(prompt: str, schema: dict, system: str = "", max_tokens: int 
 
 
 def ask_with_search(prompt: str, system: str = "", max_searches: int = 8,
-                    max_tokens: int = 8192) -> str:
+                    max_tokens: int = 16384) -> str:
     """Server-side web search: the model issues queries, Anthropic runs them.
 
     Handles the pause_turn stop reason — the server-side tool loop caps at

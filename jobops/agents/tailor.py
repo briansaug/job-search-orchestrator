@@ -36,20 +36,20 @@ SCORING ANGLE (lead with this): {(job.get("score_detail") or {}).get("angle", "n
         "from the master profile to best match this posting. Each bullet: strong "
         "verb, specific claim, quantified where the profile allows. Flag any "
         "bullet that needs a number Brian must supply as [NEEDS METRIC].",
-        system=_STYLE, max_tokens=2048,
+        system=_STYLE, max_tokens=4096,
     )
     letter = ask(
         context + "\nTASK: Write a cover letter, max 250 words. Structure: "
         "(1) a specific hook from the company research, (2) the candidate's "
         "angle for this role with one proof point, (3) a second proof point, "
         "(4) direct close. No generic praise.",
-        system=_STYLE, max_tokens=2048,
+        system=_STYLE, max_tokens=4096,
     )
     outreach = ask(
         context + "\nTASK: Write a 60-90 word LinkedIn message to the likely "
         "hiring manager for this role. Reference one company-specific fact, "
         "state the candidate's angle in one sentence, ask for a short call.",
-        system=_STYLE, max_tokens=1024,
+        system=_STYLE, max_tokens=2048,
     )
 
     d = drafts_dir_for(job)

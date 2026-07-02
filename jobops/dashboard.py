@@ -39,14 +39,25 @@ BRIEFING = DATA_DIR / "BRIEFING.md"
 MARK_STAGES = ["submitted", "response", "interview", "offer", "closed"]
 
 
-def _run_modes() -> dict[str, list[str]]:
+# Models offered by the cockpit's run picker. scout/process receive the
+# choice as JOBOPS_MODEL; daily passes it to the claude CLI via --model.
+ALLOWED_MODELS = {"claude-sonnet-5": "Sonnet 5",
+                  "claude-opus-4-8": "Opus 4.8"}
+
+
+def _build_cmd(mode: str, model: str | None) -> list[str] | None:
     py = str(ROOT / ".venv" / "bin" / "python")
-    return {
-        "scout": [py, "-m", "jobops", "scout"],
-        "process": [py, "-m", "jobops", "process"],
-        "daily": ["claude", "-p", "/jobops-daily", "--permission-mode",
-                  "acceptEdits"],
-    }
+    if mode == "scout":
+        return [py, "-m", "jobops", "scout"]
+    if mode == "process":
+        return [py, "-m", "jobops", "process"]
+    if mode == "daily":
+        cmd = ["claude", "-p", "/jobops-daily", "--permission-mode",
+               "acceptEdits"]
+        if model:
+            cmd += ["--model", model]
+        return cmd
+    return None
 
 
 class RunManager:
@@ -55,6 +66,7 @@ class RunManager:
     def __init__(self):
         self.proc = None
         self.mode = None
+        self.model = None
         self.started = None
         self.last_exit = None
         self.last_mode = None
@@ -63,9 +75,11 @@ class RunManager:
     def active(self) -> bool:
         return self.proc is not None and self.proc.poll() is None
 
-    def start(self, mode: str) -> tuple[bool, str]:
-        cmds = _run_modes()
-        if mode not in cmds:
+    def start(self, mode: str, model: str | None = None) -> tuple[bool, str]:
+        if model and model not in ALLOWED_MODELS:
+            return False, f"model must be one of {sorted(ALLOWED_MODELS)}"
+        cmd = _build_cmd(mode, model)
+        if cmd is None:
             return False, f"unknown mode '{mode}'"
         with self.lock:
             if self.active():
@@ -75,21 +89,24 @@ class RunManager:
                 if shutil.which("claude") is None:
                     return False, "claude CLI not found on PATH"
                 env.pop("ANTHROPIC_API_KEY", None)  # keep subscription auth
+            elif model:
+                env["JOBOPS_MODEL"] = model
             DATA_DIR.mkdir(exist_ok=True)
             fh = open(RUN_LOG, "wb")
             stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            fh.write(f"[{stamp}] starting '{mode}': {' '.join(cmds[mode])}\n"
-                     .encode())
+            fh.write(f"[{stamp}] starting '{mode}' on {model or 'default model'}:"
+                     f" {' '.join(cmd)}\n".encode())
             fh.flush()
             try:
                 self.proc = subprocess.Popen(
-                    cmds[mode], cwd=ROOT, env=env, stdout=fh,
+                    cmd, cwd=ROOT, env=env, stdout=fh,
                     stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
             except OSError as e:
                 fh.write(f"failed to start: {e}\n".encode())
                 fh.close()
                 return False, f"failed to start: {e}"
             self.mode = mode
+            self.model = model
             self.started = datetime.now(timezone.utc).isoformat()
             threading.Thread(target=self._watch, args=(self.proc, fh, mode),
                              daemon=True).start()
@@ -114,6 +131,7 @@ class RunManager:
         return {
             "active": self.active(),
             "mode": self.mode if self.active() else None,
+            "model": self.model if self.active() else None,
             "started": self.started if self.active() else None,
             "last_exit": self.last_exit,
             "last_mode": self.last_mode,
@@ -176,6 +194,7 @@ def _state() -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "stages": tracker.STAGES,
         "mark_stages": MARK_STAGES,
+        "models": ALLOWED_MODELS,
         "gates": gates,
         "jobs": jobs,
         "drafts": _drafts_index(jobs),
@@ -235,7 +254,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if self.path == "/api/run":
-            ok, msg = RUNS.start(str(self._read_body().get("mode", "")))
+            body = self._read_body()
+            ok, msg = RUNS.start(str(body.get("mode", "")),
+                                 body.get("model") or None)
             self._json({"ok": ok, "message": msg}, 200 if ok else 409)
         elif self.path == "/api/stop":
             ok, msg = RUNS.stop()

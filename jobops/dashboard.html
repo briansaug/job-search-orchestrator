@@ -26,8 +26,10 @@
   .dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
   .running .dot{background:var(--good);animation:pulse 1.2s infinite}
   @keyframes pulse{50%{opacity:.35}}
-  button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--border);
+  button,select{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--border);
          border-radius:8px;padding:6px 13px;cursor:pointer}
+  select:hover{border-color:var(--accent)}
+  select:disabled{opacity:.45;cursor:not-allowed}
   button:hover{border-color:var(--accent)}
   button:disabled{opacity:.45;cursor:not-allowed}
   button.primary{background:#2b3350;border-color:#3d4a7d}
@@ -131,6 +133,10 @@
   <div class="gatehint" id="gatehint">score ≥7 qualified · 5–6 your call · &lt;5 rejected</div>
   <div class="spacer"></div>
   <div class="pill" id="runpill"><span class="dot"></span><span id="runtext">idle</span></div>
+  <select id="model" title="Model for runs launched from here">
+    <option value="claude-sonnet-5">Sonnet 5</option>
+    <option value="claude-opus-4-8">Opus 4.8</option>
+  </select>
   <button id="b-scout"   onclick="startRun('scout')"  title="API surface: discovery only">▶ Scout</button>
   <button id="b-process" onclick="startRun('process')" title="API surface: score → gate → research → draft">▶ Process</button>
   <button id="b-daily"   onclick="startRun('daily')"  class="primary" title="Claude Code surface: the full daily pipeline (subscription)">▶ Daily run</button>
@@ -312,12 +318,14 @@ function renderIntake(){
 
 function renderRun(){
   const r=STATE.run, pill=document.getElementById("runpill"), txt=document.getElementById("runtext");
+  const shortModel=m=>(STATE.models&&STATE.models[m])||"";
   pill.classList.toggle("running",r.active);
   if(r.active){
     const secs=Math.max(0,Math.round((Date.now()-new Date(r.started))/1000));
-    txt.textContent=`running ${r.mode} · ${Math.floor(secs/60)}:${String(secs%60).padStart(2,"0")}`;
+    const model=r.model?` · ${shortModel(r.model)}`:"";
+    txt.textContent=`running ${r.mode}${model} · ${Math.floor(secs/60)}:${String(secs%60).padStart(2,"0")}`;
   } else txt.textContent = r.last_mode ? `idle · last ${r.last_mode} exit ${r.last_exit}` : "idle";
-  for(const id of ["b-scout","b-process","b-daily"]) document.getElementById(id).disabled=r.active;
+  for(const id of ["b-scout","b-process","b-daily","model"]) document.getElementById(id).disabled=r.active;
   document.getElementById("b-stop").style.display=r.active?"":"none";
 }
 
@@ -379,8 +387,9 @@ async function mark(id,stage){
 }
 
 async function startRun(mode){
+  const model=document.getElementById("model").value;
   const r=await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},
-                                  body:JSON.stringify({mode})});
+                                  body:JSON.stringify({mode,model})});
   const j=await r.json(); toast(j.message,!j.ok);
   if(j.ok){ logOffset=0; document.getElementById("runlog").textContent=""; showTab("runlog"); }
   await refresh();

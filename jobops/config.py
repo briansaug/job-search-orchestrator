@@ -9,8 +9,10 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 
-# Cost-balanced default; override per-run with JOBOPS_MODEL=claude-opus-4-8 etc.
-MODEL = os.environ.get("JOBOPS_MODEL", "claude-sonnet-4-6")
+# Cost-balanced default: Sonnet 5 — near-Opus agentic quality at $3/$15 per
+# MTok (intro $2/$10 through 2026-08-31). Override per-run with
+# JOBOPS_MODEL=claude-opus-4-8 ($5/$25) when quality matters more.
+MODEL = os.environ.get("JOBOPS_MODEL", "claude-sonnet-5")
 
 CONFIG_DIR = ROOT / "config"
 DATA_DIR = ROOT / "data"
