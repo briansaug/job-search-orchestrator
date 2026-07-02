@@ -9,8 +9,14 @@ subscription — no API key in the environment (an exported
 
 ```sh
 cd /Users/brianbruner/job-search-orchestrator && \
-  claude -p "/jobops-daily" --permission-mode acceptEdits >> data/cron.log 2>&1
+  claude -p "/jobops-daily" --model claude-sonnet-5 \
+  --permission-mode acceptEdits >> data/cron.log 2>&1
 ```
+
+The model is pinned to match the pipeline default (`jobops/config.py`).
+To run the daily on Opus 4.8 instead, change the flag to
+`--model claude-opus-4-8` and re-bootstrap the job (below), or launch a
+one-off from the cockpit's model picker.
 
 Headless permissions are pre-granted in `.claude/settings.json`: WebSearch,
 and writes confined to `data/`. The profile, config, and source directories
