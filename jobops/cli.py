@@ -4,6 +4,7 @@
   python -m jobops add              add a job by hand (e.g. from LinkedIn)
   python -m jobops process          score -> gate -> research -> draft
   python -m jobops status           show the pipeline dashboard
+  python -m jobops dashboard        local web cockpit (live pipeline view + run buttons)
   python -m jobops mark ID STAGE    record manual outcomes (submitted, interview...)
   python -m jobops selftest         one cheap end-to-end scorer call
 """
@@ -88,6 +89,11 @@ def cmd_status(_args):
     print(tracker.dashboard(tracker.load_jobs()))
 
 
+def cmd_dashboard(args):
+    from .dashboard import serve
+    serve(port=args.port, open_browser=not args.no_browser)
+
+
 def cmd_mark(args):
     jobs = tracker.load_jobs()
     job = next((j for j in jobs if j["id"] == args.id), None)
@@ -136,6 +142,11 @@ def main():
     p_proc.set_defaults(func=cmd_process)
 
     sub.add_parser("status").set_defaults(func=cmd_status)
+
+    p_dash = sub.add_parser("dashboard")
+    p_dash.add_argument("--port", type=int, default=8765)
+    p_dash.add_argument("--no-browser", action="store_true")
+    p_dash.set_defaults(func=cmd_dashboard)
 
     p_mark = sub.add_parser("mark")
     p_mark.add_argument("id")

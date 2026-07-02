@@ -56,6 +56,10 @@ the gates in `config/search_profile.yaml` (≥7 qualified / 5–6 borderline /
   shipped: `/jobops-intake` skill (P0–P6, resumable), profile schema v2
   template, `facts.yaml` + `contacts.json` ledgers, gitignore coverage.
   Brian has NOT yet run the questionnaire — profile still has `[FILL IN]`s.
+  Also shipped: local web cockpit — `.venv/bin/python -m jobops dashboard`
+  → http://127.0.0.1:8765 (live kanban polling jobs.json, draft viewer,
+  run buttons for scout/process/daily, mark-outcome recording; the `daily`
+  subprocess strips ANTHROPIC_API_KEY to preserve subscription auth).
 - First live run: 8 postings tracked. **Nimble Gravity — AI Enablement &
   Adoption Manager (9/10, drafted, near submission-ready)**; borderlines
   Accenture-Austin + Glean await Brian's pursue/pass; 4 Anthropic roles

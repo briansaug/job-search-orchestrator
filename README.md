@@ -59,9 +59,16 @@ Key design decisions:
 python -m jobops scout      # discovery agents search the web for openings
 python -m jobops add ...    # paste in a LinkedIn posting by hand
 python -m jobops process    # score → gate → research → draft (batched)
-python -m jobops status     # pipeline dashboard
+python -m jobops status     # pipeline dashboard (terminal)
+python -m jobops dashboard  # web cockpit: live kanban, draft viewer, run buttons
 python -m jobops mark ID submitted   # record what YOU did
 ```
+
+The cockpit (`http://127.0.0.1:8765`, localhost-only) polls the same
+`data/jobs.json` the agents write, so a running pipeline animates live:
+jobs flash as they pass the gate, drafts appear for review, and outcome
+buttons record what the human did. It launches runs but submits nothing —
+the trust boundary holds at every surface.
 
 ## Two run surfaces, one state
 

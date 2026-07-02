@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobOps cockpit</title>
+<style>
+  :root{
+    --bg:#0e1014; --panel:#151920; --panel2:#1b212b; --border:#252d3a;
+    --text:#e6eaf2; --muted:#93a0b4; --faint:#5c687c; --accent:#8b9dff;
+    --good:#3fce8f; --warn:#f2b544; --bad:#ef6b6b; --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  code,pre,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
+         padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--border)}
+  .brand{font-weight:600;font-size:16px}
+  .brand span{color:var(--accent)}
+  .gatehint{color:var(--faint);font-size:12px}
+  .spacer{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;border-radius:999px;
+        border:1px solid var(--border);background:var(--panel);font-size:12px;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+  .running .dot{background:var(--good);animation:pulse 1.2s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--border);
+         border-radius:8px;padding:6px 13px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.primary{background:#2b3350;border-color:#3d4a7d}
+  button.danger{border-color:#5c3030}
+  button.danger:hover{border-color:var(--bad)}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:14px 20px}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px}
+  .stat b{display:block;font-size:22px;font-weight:600}
+  .stat span{color:var(--muted);font-size:12px}
+
+  nav{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--border)}
+  nav button{background:none;border:none;border-bottom:2px solid transparent;border-radius:0;
+             padding:9px 14px;color:var(--muted)}
+  nav button.active{color:var(--text);border-bottom-color:var(--accent)}
+  nav button:hover{border-bottom-color:var(--faint)}
+  main{padding:16px 20px 60px}
+  .tab{display:none}
+  .tab.active{display:block}
+
+  .board{display:flex;gap:12px;overflow-x:auto;align-items:flex-start;padding-bottom:10px}
+  .col{min-width:225px;max-width:225px;background:var(--panel);border:1px solid var(--border);
+       border-radius:var(--radius)}
+  .col h3{margin:0;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.4px;
+          text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);
+          display:flex;justify-content:space-between}
+  .col h3 em{font-style:normal;color:var(--faint)}
+  .cards{padding:8px;display:flex;flex-direction:column;gap:8px;min-height:30px}
+  .card{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+        padding:9px 11px;cursor:pointer}
+  .card:hover{border-color:var(--accent)}
+  .card .co{font-weight:600;font-size:13px}
+  .card .ti{color:var(--muted);font-size:12px;margin:2px 0 7px}
+  .chips{display:flex;gap:5px;flex-wrap:wrap}
+  .chip{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted)}
+  .s-good{color:var(--good);border-color:#1d5c42}
+  .s-warn{color:var(--warn);border-color:#6b5322}
+  .s-bad{color:var(--bad);border-color:#63302f}
+  .flash{animation:flash 1.6s ease-out}
+  @keyframes flash{0%{box-shadow:0 0 0 2px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+  .empty{color:var(--faint);font-size:12px;text-align:center;padding:10px 4px}
+
+  .feed{max-width:760px}
+  .feed .row{display:flex;gap:14px;padding:8px 4px;border-bottom:1px solid var(--panel2)}
+  .feed .d{color:var(--faint);font-size:12px;white-space:nowrap;padding-top:2px}
+  .feed .co{font-weight:600;margin-right:8px}
+
+  .prose{max-width:760px;background:var(--panel);border:1px solid var(--border);
+         border-radius:var(--radius);padding:18px 22px}
+  .prose h1{font-size:19px;margin:.4em 0}
+  .prose h2{font-size:16px;margin:1em 0 .4em}
+  .prose h3{font-size:14px;margin:1em 0 .3em}
+  .prose a{color:var(--accent)}
+  .prose li{margin:3px 0}
+  .prose code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .meta{color:var(--faint);font-size:12px;margin:0 0 10px}
+
+  .phases{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+  .phase{border:1px solid var(--border);border-radius:8px;padding:8px 12px;min-width:120px;background:var(--panel)}
+  .phase b{display:block;font-size:12px}
+  .phase span{font-size:11px;color:var(--muted)}
+  .phase.done{border-color:#1d5c42}
+  .phase.done b{color:var(--good)}
+  .phase.in_progress{border-color:#6b5322}
+  .phase.in_progress b{color:var(--warn)}
+
+  #runlog{background:#0a0c10;border:1px solid var(--border);border-radius:var(--radius);
+          padding:14px;white-space:pre-wrap;word-break:break-word;font-size:12.5px;
+          max-height:60vh;overflow:auto;color:#c7d0de}
+  .lognote{color:var(--faint);font-size:12px;margin:8px 0}
+
+  #backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:30}
+  #drawer{position:fixed;top:0;right:-540px;width:520px;max-width:94vw;height:100vh;z-index:31;
+          background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;
+          transition:right .18s ease;padding:20px 22px 60px}
+  #drawer.open{right:0}
+  #drawer h2{margin:0 0 2px;font-size:17px}
+  #drawer .sub{color:var(--muted);margin:0 0 14px}
+  #drawer section{margin:16px 0}
+  #drawer section>h4{margin:0 0 6px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint)}
+  .box{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px}
+  .draftpills{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+  .draftpills button{padding:3px 10px;font-size:12px;border-radius:999px}
+  .draftpills button.active{border-color:var(--accent);color:var(--accent)}
+  .marks{display:flex;gap:8px;flex-wrap:wrap}
+  .hist{list-style:none;margin:0;padding:0;font-size:12.5px}
+  .hist li{padding:4px 0 4px 14px;border-left:2px solid var(--border);margin-left:4px}
+  .close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:18px;color:var(--muted)}
+
+  #toasts{position:fixed;bottom:18px;right:18px;z-index:50;display:flex;flex-direction:column;gap:8px}
+  .toast{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);
+         border-radius:8px;padding:10px 14px;font-size:13px;max-width:340px}
+  .toast.err{border-left-color:var(--bad)}
+  #offline{display:none;background:#3a2626;color:#f0b6b6;text-align:center;padding:5px;font-size:12px}
+</style>
+</head>
+<body>
+<div id="offline">cockpit can’t reach the server — is `python -m jobops dashboard` still running?</div>
+<header>
+  <div class="brand">JobOps <span>▸ cockpit</span></div>
+  <div class="gatehint" id="gatehint">score ≥7 qualified · 5–6 your call · &lt;5 rejected</div>
+  <div class="spacer"></div>
+  <div class="pill" id="runpill"><span class="dot"></span><span id="runtext">idle</span></div>
+  <button id="b-scout"   onclick="startRun('scout')"  title="API surface: discovery only">▶ Scout</button>
+  <button id="b-process" onclick="startRun('process')" title="API surface: score → gate → research → draft">▶ Process</button>
+  <button id="b-daily"   onclick="startRun('daily')"  class="primary" title="Claude Code surface: the full daily pipeline (subscription)">▶ Daily run</button>
+  <button id="b-stop"    onclick="stopRun()" class="danger" style="display:none">■ Stop</button>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<nav>
+  <button data-tab="pipeline" class="active" onclick="showTab('pipeline')">Pipeline</button>
+  <button data-tab="activity" onclick="showTab('activity')">Activity</button>
+  <button data-tab="briefing" onclick="showTab('briefing')">Briefing</button>
+  <button data-tab="intake"   onclick="showTab('intake')">Intake</button>
+  <button data-tab="runlog"   onclick="showTab('runlog')">Run log</button>
+</nav>
+
+<main>
+  <div class="tab active" id="tab-pipeline"><div class="board" id="board"></div></div>
+  <div class="tab" id="tab-activity"><div class="feed" id="feed"></div></div>
+  <div class="tab" id="tab-briefing">
+    <p class="meta" id="briefmeta"></p>
+    <div class="prose" id="briefing"></div>
+  </div>
+  <div class="tab" id="tab-intake">
+    <div class="prose" style="max-width:760px">
+      <h2 style="margin-top:0">Profile intake — /jobops-intake</h2>
+      <p class="meta">Seven short interview sittings build the master profile, the verified-facts
+      ledger, and the contacts CRM. Run it in Claude Code from this repo: <code>/jobops-intake</code></p>
+      <div class="phases" id="phases"></div>
+      <p class="meta" id="intakenote"></p>
+    </div>
+  </div>
+  <div class="tab" id="tab-runlog">
+    <p class="lognote">Runs launched from this cockpit stream below. The 8 AM scheduled run logs to
+    <code>data/cron.log</code> instead (its results still appear in the pipeline).</p>
+    <pre id="runlog">no dashboard-launched runs yet</pre>
+  </div>
+</main>
+
+<div id="backdrop" onclick="closeDrawer()"></div>
+<aside id="drawer"></aside>
+<div id="toasts"></div>
+
+<script>
+"use strict";
+let STATE=null, prevStages={}, drawerId=null, drawerSig="", logOffset=0, activeDraft=0;
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function md(src){                       // tiny renderer: headers, lists, bold, links, code
+  if(!src) return "";
+  const inline=t=>esc(t)
+    .replace(/`([^`]+)`/g,"<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/&lt;(https?:[^&\s]+)&gt;/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  const out=[]; let list=false, para=[];
+  const flush=()=>{ if(para.length){out.push("<p>"+inline(para.join(" "))+"</p>");para=[];} };
+  for(const raw of src.split("\n")){
+    const line=raw.trimEnd();
+    const h=line.match(/^(#{1,3})\s+(.*)/), li=line.match(/^\s*[-*]\s+(.*)/);
+    if(h){flush(); if(list){out.push("</ul>");list=false;}
+      out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`);}
+    else if(li){flush(); if(!list){out.push("<ul>");list=true;} out.push("<li>"+inline(li[1])+"</li>");}
+    else if(!line.trim()){flush(); if(list){out.push("</ul>");list=false;}}
+    else para.push(line);
+  }
+  flush(); if(list) out.push("</ul>");
+  return out.join("\n");
+}
+
+function toast(msg,err){
+  const t=document.createElement("div");
+  t.className="toast"+(err?" err":""); t.textContent=msg;
+  document.getElementById("toasts").appendChild(t);
+  setTimeout(()=>t.remove(),4200);
+}
+
+function showTab(name){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.id==="tab-"+name));
+}
+
+function scoreClass(score,gates){
+  if(score==null) return "";
+  if(score>=gates.qualified) return "s-good";
+  if(score>=gates.borderline) return "s-warn";
+  return "s-bad";
+}
+const daysAgo=d=>{ if(!d) return ""; const n=Math.round((Date.now()-new Date(d+"T12:00:00"))/864e5);
+  return n<=0?"today":n+"d"; };
+const shortSource=s=>(s||"").split(":")[0];
+
+const COLS=[
+  {key:"scouted",label:"Scouted",stages:["scouted"]},
+  {key:"borderline",label:"Borderline · your call",stages:["borderline"]},
+  {key:"qualified",label:"Qualified",stages:["qualified"]},
+  {key:"researched",label:"Researched",stages:["researched"]},
+  {key:"drafted",label:"Drafted · review me",stages:["drafted"]},
+  {key:"submitted",label:"Submitted",stages:["submitted"]},
+  {key:"outcomes",label:"Outcomes",stages:["response","interview","offer","closed"]},
+  {key:"rejected",label:"Rejected",stages:["rejected"]},
+];
+
+function renderBoard(){
+  const b=document.getElementById("board"), gates=STATE.gates; b.innerHTML="";
+  for(const col of COLS){
+    const jobs=STATE.jobs.filter(j=>col.stages.includes(j.stage));
+    const el=document.createElement("div"); el.className="col";
+    el.innerHTML=`<h3>${col.label} <em>${jobs.length}</em></h3><div class="cards"></div>`;
+    const cards=el.querySelector(".cards");
+    if(!jobs.length) cards.innerHTML=`<div class="empty">—</div>`;
+    for(const j of jobs){
+      const c=document.createElement("div"); c.className="card";
+      if(prevStages[j.id] && prevStages[j.id]!==j.stage) c.classList.add("flash");
+      const chips=[];
+      chips.push(j.score!=null?`<span class="chip ${scoreClass(j.score,gates)}">${j.score}/10</span>`
+                              :`<span class="chip">unscored</span>`);
+      if(col.stages.length>1) chips.push(`<span class="chip">${esc(j.stage)}</span>`);
+      chips.push(`<span class="chip">${daysAgo(j.found_on)}</span>`);
+      chips.push(`<span class="chip">${esc(shortSource(j.source))}</span>`);
+      if(STATE.drafts[j.id]) chips.push(`<span class="chip s-good">drafts</span>`);
+      c.innerHTML=`<div class="co">${esc(j.company)}</div><div class="ti">${esc(j.title)}</div>
+                   <div class="chips">${chips.join("")}</div>`;
+      c.onclick=()=>openDrawer(j.id);
+      cards.appendChild(c);
+    }
+    b.appendChild(el);
+  }
+}
+
+function renderStats(){
+  const c=s=>STATE.jobs.filter(j=>j.stage===s).length;
+  const scored=STATE.jobs.filter(j=>j.score!=null);
+  const items=[
+    [STATE.jobs.length,"tracked"],[c("borderline"),"awaiting your call"],
+    [c("qualified")+c("researched"),"in the expensive lane"],[c("drafted"),"drafts to review"],
+    [c("submitted"),"submitted"],[c("interview")+c("offer"),"interviews + offers"],
+    [scored.length?(scored.reduce((a,j)=>a+j.score,0)/scored.length).toFixed(1):"–","avg score"],
+  ];
+  document.getElementById("stats").innerHTML=
+    items.map(([n,l])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("");
+}
+
+function renderFeed(){
+  const rows=[];
+  for(const j of STATE.jobs)
+    j.history.forEach((h,i)=>{
+      const m=h.match(/^(\d{4}-\d{2}-\d{2}):\s*(.*)$/);
+      rows.push({d:m?m[1]:"", t:m?m[2]:h, co:j.company, i});
+    });
+  rows.sort((a,b)=>b.d.localeCompare(a.d)||b.i-a.i);
+  document.getElementById("feed").innerHTML = rows.length
+    ? rows.slice(0,120).map(r=>`<div class="row"><span class="d">${esc(r.d)}</span>
+        <span><span class="co">${esc(r.co)}</span>${esc(r.t)}</span></div>`).join("")
+    : `<div class="empty">nothing yet — run a scout</div>`;
+}
+
+function renderBriefing(){
+  document.getElementById("briefmeta").textContent =
+    STATE.briefing_mtime ? "last written "+STATE.briefing_mtime+" · data/BRIEFING.md" : "";
+  document.getElementById("briefing").innerHTML =
+    STATE.briefing ? md(STATE.briefing) : `<p class="meta">No briefing yet — it appears after the first daily run.</p>`;
+}
+
+const PHASE_NAMES={P0:"Goals",P1:"Inventory",P2:"Deep-dives",P3:"Market fit",
+                   P4:"Constraints",P5:"Network",P6:"Verification"};
+function renderIntake(){
+  const el=document.getElementById("phases"), note=document.getElementById("intakenote");
+  const st=STATE.intake&&STATE.intake.phases;
+  el.innerHTML=Object.entries(PHASE_NAMES).map(([k,name])=>{
+    const s=st?(st[k]||"pending"):"pending";
+    return `<div class="phase ${s}"><b>${k} · ${name}</b><span>${s.replace("_"," ")}</span></div>`;
+  }).join("");
+  note.textContent = st
+    ? (STATE.intake.next_suggested?`Next suggested sitting: ${STATE.intake.next_suggested}`:"Intake complete.")
+    : "Not started yet — the phases light up as the interview progresses.";
+}
+
+function renderRun(){
+  const r=STATE.run, pill=document.getElementById("runpill"), txt=document.getElementById("runtext");
+  pill.classList.toggle("running",r.active);
+  if(r.active){
+    const secs=Math.max(0,Math.round((Date.now()-new Date(r.started))/1000));
+    txt.textContent=`running ${r.mode} · ${Math.floor(secs/60)}:${String(secs%60).padStart(2,"0")}`;
+  } else txt.textContent = r.last_mode ? `idle · last ${r.last_mode} exit ${r.last_exit}` : "idle";
+  for(const id of ["b-scout","b-process","b-daily"]) document.getElementById(id).disabled=r.active;
+  document.getElementById("b-stop").style.display=r.active?"":"none";
+}
+
+function jobSig(j){ return j?j.stage+":"+j.history.length+":"+(STATE.drafts[j.id]||[]).length:""; }
+
+function openDrawer(id){ drawerId=id; activeDraft=0; drawerSig=""; renderDrawer(true); }
+function closeDrawer(){ drawerId=null;
+  document.getElementById("drawer").classList.remove("open");
+  document.getElementById("backdrop").style.display="none"; }
+
+function renderDrawer(force){
+  if(!drawerId) return;
+  const j=STATE.jobs.find(x=>x.id===drawerId); if(!j){closeDrawer();return;}
+  const sig=jobSig(j); if(!force && sig===drawerSig) return; drawerSig=sig;
+  const d=document.getElementById("drawer"), gates=STATE.gates, sd=j.score_detail||{};
+  const drafts=STATE.drafts[j.id]||[];
+  if(activeDraft>=drafts.length) activeDraft=0;
+  let html=`<button class="close" onclick="closeDrawer()">✕</button>
+    <h2>${esc(j.company)}</h2><p class="sub">${esc(j.title)}</p>
+    <div class="chips">
+      <span class="chip">${esc(j.stage)}</span>
+      ${j.score!=null?`<span class="chip ${scoreClass(j.score,gates)}">score ${j.score}/10</span>`:""}
+      <span class="chip">found ${esc(j.found_on||"?")}</span>
+      ${j.url?`<a class="chip" style="text-decoration:none" href="${esc(j.url)}" target="_blank" rel="noopener">posting ↗</a>`:""}
+    </div>`;
+  if(j.description) html+=`<section><h4>Posting summary</h4><div class="box">${esc(j.description)}</div></section>`;
+  if(sd.rationale){
+    html+=`<section><h4>Score detail</h4><div class="box">
+      <p style="margin:0 0 6px"><b>Angle:</b> ${esc(sd.angle||"—")}</p>
+      <p style="margin:0 0 6px"><b>Location fit:</b> ${esc(sd.location_fit||"—")}</p>
+      <p style="margin:0 0 6px">${esc(sd.rationale)}</p>
+      ${(sd.red_flags&&sd.red_flags.length)?`<p style="margin:0"><b>Red flags:</b> ${esc(sd.red_flags.join(" · "))}</p>`:""}
+    </div></section>`;
+  }
+  if(j.research) html+=`<section><h4>Company research</h4><div class="box prose" style="padding:10px 13px">${md(j.research)}</div></section>`;
+  if(drafts.length){
+    html+=`<section><h4>Drafts — for YOUR review</h4>
+      <div class="draftpills">${drafts.map((f,i)=>
+        `<button class="${i===activeDraft?"active":""}" onclick="activeDraft=${i};renderDrawer(true)">${esc(f.name)}</button>`).join("")}</div>
+      <div class="box prose" style="padding:10px 13px;max-height:340px;overflow:auto">${md(drafts[activeDraft].content)}</div></section>`;
+  }
+  const marks=STATE.mark_stages.filter(s=>s!==j.stage);
+  html+=`<section><h4>Record your action</h4><div class="marks">${
+    marks.map(s=>`<button onclick="mark('${esc(j.id)}','${s}')">mark ${s}</button>`).join("")
+  }</div><p class="meta" style="margin-top:8px">Recording only — agents never submit; these buttons log what YOU did.</p></section>`;
+  html+=`<section><h4>History</h4><ul class="hist">${
+    j.history.slice().reverse().map(h=>`<li>${esc(h)}</li>`).join("")}</ul></section>`;
+  d.innerHTML=html;
+  d.classList.add("open");
+  document.getElementById("backdrop").style.display="block";
+}
+
+async function mark(id,stage){
+  if(!confirm(`Record that YOU took this step — mark "${stage}"?`)) return;
+  const r=await fetch("/api/mark",{method:"POST",headers:{"Content-Type":"application/json"},
+                                   body:JSON.stringify({id,stage})});
+  const j=await r.json(); toast(j.message,!j.ok);
+  await refresh();
+}
+
+async function startRun(mode){
+  const r=await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},
+                                  body:JSON.stringify({mode})});
+  const j=await r.json(); toast(j.message,!j.ok);
+  if(j.ok){ logOffset=0; document.getElementById("runlog").textContent=""; showTab("runlog"); }
+  await refresh();
+}
+async function stopRun(){
+  const r=await fetch("/api/stop",{method:"POST"}); const j=await r.json();
+  toast(j.message,!j.ok); await refresh();
+}
+
+async function pollLog(){
+  if(!STATE) return;
+  const visible=document.getElementById("tab-runlog").classList.contains("active");
+  if(!visible && !STATE.run.active) return;
+  try{
+    const r=await fetch("/api/log?offset="+logOffset); const j=await r.json();
+    if(j.text){
+      const pre=document.getElementById("runlog");
+      if(logOffset===0) pre.textContent="";
+      pre.textContent+=j.text;
+      pre.scrollTop=pre.scrollHeight;
+    }
+    logOffset=j.offset;
+  }catch(e){}
+}
+
+async function refresh(){
+  try{
+    const r=await fetch("/api/state"); STATE=await r.json();
+    document.getElementById("offline").style.display="none";
+  }catch(e){
+    document.getElementById("offline").style.display="block"; return;
+  }
+  document.getElementById("gatehint").textContent=
+    `score ≥${STATE.gates.qualified} qualified · ${STATE.gates.borderline}–${STATE.gates.qualified-1} your call · <${STATE.gates.borderline} rejected`;
+  renderStats(); renderBoard(); renderFeed(); renderBriefing(); renderIntake(); renderRun(); renderDrawer(false);
+  const cur={}; for(const j of STATE.jobs) cur[j.id]=j.stage; prevStages=cur;
+}
+
+refresh();
+setInterval(refresh,2500);
+setInterval(pollLog,1500);
+setInterval(()=>{ if(STATE&&STATE.run.active) renderRun(); },1000);
+</script>
+</body>
+</html>
