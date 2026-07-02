@@ -63,6 +63,24 @@ python -m jobops status     # pipeline dashboard
 python -m jobops mark ID submitted   # record what YOU did
 ```
 
+## Two run surfaces, one state
+
+The same pipeline runs two ways, sharing `data/jobs.json` and all config:
+
+| Surface | How | Billing | Use case |
+|---|---|---|---|
+| **Claude API** (`jobops/` Python) | `python -m jobops ...` | API tokens (~cents/run) | Portfolio reference implementation: server-side `web_search`, schema-enforced structured outputs, code-controlled gating |
+| **Claude Code harness** (`.claude/skills/`) | `/jobops-daily` inside Claude Code, or headless `claude -p "/jobops-daily"` | Claude subscription | Daily driver — scheduled via launchd/cron at 8 AM to catch new postings the morning they appear |
+
+The skill (`.claude/skills/jobops-daily/SKILL.md`) encodes the identical
+pipeline contract — same job schema, same 0-10 scoring rubric, same gates,
+same hard rule that only a human submits. Comparing the two files is a study
+in the same orchestration design expressed as code vs. as harness
+instructions.
+
+Daily automation (macOS): a launchd agent runs the headless command every
+morning; see `docs/scheduling.md` for the plist.
+
 ## Setup
 
 ```bash

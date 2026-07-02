@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch",
+      "Read(//Users/brianbruner/job-search-orchestrator/**)",
+      "Write(//Users/brianbruner/job-search-orchestrator/data/**)",
+      "Edit(//Users/brianbruner/job-search-orchestrator/data/**)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Write(./profile/**)",
+      "Write(./config/**)",
+      "Write(./jobops/**)"
+    ]
+  }
+}
