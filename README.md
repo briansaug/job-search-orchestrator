@@ -90,8 +90,14 @@ cp profile/TEMPLATE_master_profile.md profile/master_profile.md  # then fill it 
 .venv/bin/python -m jobops selftest
 ```
 
-Personal data (`profile/master_profile.md`, `data/`, `.env`) is gitignored —
-the repo is safe to publish; the job search stays private.
+Better onboarding: open the repo in Claude Code and run `/jobops-intake` —
+a guided interview (seven short phases, resumable) that builds the profile,
+a verified-facts ledger (`facts.yaml`: every number tagged
+documented/estimated/guess), and a contacts mini-CRM for you.
+
+Personal data (`profile/master_profile.md`, `profile/facts.yaml`,
+`profile/contacts.json`, `data/`, `.env`) is gitignored — the repo is safe
+to publish; the job search stays private.
 
 ## Stack
 

@@ -78,11 +78,33 @@ re-find the same posting harmlessly.
 - The gate (see §2) is the biggest lever: most discovered jobs never reach
   the expensive path.
 
+## 8. Interactive elicitation is a skill, not a subagent
+
+The intake interviewer (`/jobops-intake`) needs mid-task dialogue with the
+user. Subagents run headless — they spawn, work, and return once — so a
+questionnaire inside one would either stall or answer its own questions.
+The rule encoded here: if the human participates mid-task, the work belongs
+to the main loop (a skill); if the human only reviews the output, it can be
+a spoke. Intake also reuses the §6 pattern at conversation scale:
+`profile/intake_state.json` checkpoints phase progress (P0–P6), so a
+dropped sitting resumes exactly where it stopped.
+
+## 9. Verification tags — a trust boundary as data
+
+`profile/facts.yaml` turns the "no invented metrics" policy from prose into
+data: every claim carries `documented | estimated | guess`. Downstream
+agents don't interpret policy, they filter on a field — documented facts
+may be quoted verbatim, estimates only as rounded ranges, guesses never.
+Same move as the score gate (§2): a business rule becomes enforceable the
+moment it's structured data instead of instructions. This ledger is what
+the claims-auditor (roadmap session C) will diff every draft against.
+
 ## Known limitations / next steps
 
 - LinkedIn can't be scouted automatically (anti-bot) — the `add` command is
   the manual intake path.
-- No scheduler yet; runs are manual. A daily `scout` + morning briefing is
-  the natural next step.
+- The people lane (referrals, outreach, follow-ups) and interview lane are
+  designed but not yet built — build order in `docs/capability-roadmap.md`.
 - Outcome analytics (application → interview conversion by source/score)
-  once real data accumulates.
+  once real data accumulates — ships as the metrics-analyst (roadmap
+  session D).

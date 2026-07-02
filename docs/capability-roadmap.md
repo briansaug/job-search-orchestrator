@@ -47,7 +47,7 @@ Existing: scout, scorer (gate), company-researcher, tailor (all inside
 
 | Sub-agent | Mission | Needs | Human checkpoint |
 |---|---|---|---|
-| **intake-interviewer** | Run the P0–P6 onboarding questionnaire (below); build profile v2, facts ledger, network map | conversation, profile files | user answers; approves read-back |
+| **intake-interviewer** | Run the P0–P6 onboarding questionnaire (below); build profile v2, facts ledger, network map. *Ships as the `/jobops-intake` skill — live dialogue can't run in a headless sub-agent* | conversation, profile files | user answers; approves read-back |
 | **referral-pathfinder** | For every job scored ≥7, map 3–5 named warm/adjacent paths in (2nd-degree, alumni, communities) with evidence | WebSearch, contacts store, researcher output | user picks whom to approach |
 | **outreach-drafter** | Personalized LinkedIn notes (<400 chars) & emails to identified contacts; informational-interview asks | facts ledger, pathfinder output, Gmail-draft MCP (optional) | user edits & sends every message |
 | **claims-auditor** | Blocking QA gate on every tailor draft: verify each bullet against `facts.yaml`, flag hallucination/conflation/AI-generic phrasing | file read, structured output | runs *before* the user ever sees a draft |

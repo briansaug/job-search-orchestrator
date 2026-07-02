@@ -1,0 +1,23 @@
+{
+  "_readme": [
+    "contacts.json — network mini-CRM (TEMPLATE). Copy to profile/contacts.json (gitignored), or let /jobops-intake build it.",
+    "This file is other people's PII: never commit it and never send it to any external service; agents read it locally only.",
+    "warmth: warm = would take your call this week | dormant = past tie worth reviving | target-adjacent = at or near a target company, not yet known personally",
+    "history entries look like: {\"date\": \"2026-07-02\", \"what\": \"coffee chat re: AI roles\", \"outcome\": \"intro promised\"}"
+  ],
+  "contacts": [
+    {
+      "id": "C001",
+      "name": "",
+      "company": "",
+      "role": "",
+      "warmth": "warm",
+      "how_we_know": "",
+      "target_companies": [],
+      "channel": "linkedin",
+      "last_touch": null,
+      "next_touch": null,
+      "history": []
+    }
+  ]
+}

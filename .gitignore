@@ -3,6 +3,9 @@
 
 # Personal data layer (public repo, private life)
 profile/master_profile.md
+profile/facts.yaml
+profile/contacts.json
+profile/intake_state.json
 data/
 
 # Python

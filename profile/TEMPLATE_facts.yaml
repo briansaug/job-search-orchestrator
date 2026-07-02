@@ -1,0 +1,20 @@
+# facts.yaml — verified-claims ledger (TEMPLATE)
+# Copy to profile/facts.yaml (gitignored), or let /jobops-intake build it.
+#
+# The anti-inflation contract every agent obeys:
+#   documented → may be quoted verbatim (an artifact proves it; name it in source)
+#   estimated  → rounded ranges only ("about a dozen", "100+")
+#   guess      → must NEVER appear in any agent output
+#
+# Every number in a resume bullet, cover letter, outreach note, or interview
+# story must trace back to a fact id here. Cite ids in the profile as (F001).
+
+facts:
+  - id: F001
+    claim: ""          # what happened, e.g. "Grew training audience"
+    value: ""          # the number, e.g. "100+"
+    unit: ""           # people / % / $ / engagements / hours-saved ...
+    period: ""         # when, e.g. "2024-2026"
+    source: ""         # the artifact: performance review, email, dashboard, contract
+    status: guess      # documented | estimated | guess
+    notes: ""
