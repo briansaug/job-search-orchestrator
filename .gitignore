@@ -1,0 +1,11 @@
+# Secrets — never commit
+.env
+
+# Personal data layer (public repo, private life)
+profile/master_profile.md
+data/
+
+# Python
+.venv/
+__pycache__/
+*.pyc

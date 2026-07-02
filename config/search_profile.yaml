@@ -1,0 +1,52 @@
+# What the scout agents hunt for and how the scorer judges fit.
+# Edit freely — every agent reads this file at runtime.
+
+target_roles:
+  - AI Solutions Architect
+  - AI Solution Consultant
+  - AI Implementation Consultant
+  - LLM Solutions Engineer
+  - AI Enablement Lead / AI Adoption Manager
+  - Claude / Anthropic ecosystem specialist roles
+
+keywords:
+  - Claude
+  - Anthropic
+  - MCP (Model Context Protocol)
+  - AI agents / agentic workflows
+  - LLM orchestration
+  - prompt engineering
+  - AI upskilling / enablement
+
+location:
+  home_base: Austin, TX metro
+  # Scoring preference order — in_person_austin scores highest,
+  # remote is acceptable when comp + fit are strong.
+  preference:
+    - in_person_or_hybrid_austin
+    - remote_us_high_comp
+  relocation: false
+
+compensation:
+  # Used as a soft signal by the scorer, not a hard gate.
+  # TODO(Brian): set your real floor.
+  minimum_base_usd: 120000
+
+seniority:
+  # Career-changer positioning: senior in business/strategy,
+  # newer to hands-on AI delivery. Avoid roles requiring 5+ yrs
+  # of software engineering; target roles valuing client-facing
+  # AI strategy + certified Claude expertise.
+  avoid_requirements:
+    - 5+ years software engineering
+    - PhD required
+  strengths:
+    - business ownership / client management
+    - AI training & enablement (SAUG)
+    - Claude Certified Architect (Foundations) — in progress
+    - Claude Partner Network (CPN) member
+
+pipeline:
+  score_gate_qualified: 7    # >= this → auto research + draft
+  score_gate_borderline: 5   # >= this → hold for manual review
+  max_jobs_per_process_run: 3

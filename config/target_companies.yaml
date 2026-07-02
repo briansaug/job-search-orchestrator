@@ -1,0 +1,31 @@
+# Companies the career-page scout watches each run.
+# Grouped so scouts can search in themed batches.
+# TODO(Brian): prune/extend — this is a seed list.
+
+anthropic_partners_consultancies:
+  - Accenture
+  - Deloitte
+  - Slalom
+  - IBM Consulting
+  - Capgemini
+  - EPAM Systems
+  - Thoughtworks
+  - BCG X
+
+austin_ai_and_tech:
+  - KUNGFU.AI          # Austin AI consultancy
+  - Oracle (Austin)
+  - Dell Technologies
+  - Indeed
+  - Atlassian (Austin)
+  - Cloudflare (Austin)
+  - CrowdStrike (Austin)
+  - Q2 (Austin)
+  - SailPoint (Austin)
+
+ai_native:
+  - Anthropic
+  - OpenAI competitors' partner ecosystems
+  - Scale AI
+  - Glean
+  - Writer
