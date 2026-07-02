@@ -34,3 +34,22 @@ tail -f data/cron.log                                                           
 
 Each run ends by writing `data/BRIEFING.md` — the morning read: new
 postings, scores, drafts awaiting review.
+
+## Always-on cockpit (launchd)
+
+A second LaunchAgent keeps the web cockpit permanently available at
+<http://127.0.0.1:8765> (localhost-only — private to this Mac):
+
+`~/Library/LaunchAgents/com.brianbruner.jobops-cockpit.plist` runs
+`.venv/bin/python -m jobops dashboard --no-browser` at login and restarts
+it if it exits (`KeepAlive`), logging to `data/cockpit.log`.
+
+```sh
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.brianbruner.jobops-cockpit.plist   # enable
+launchctl bootout   gui/$(id -u)/com.brianbruner.jobops-cockpit                                 # disable
+launchctl kickstart -k gui/$(id -u)/com.brianbruner.jobops-cockpit                              # restart (e.g. after code changes)
+```
+
+Restart it after pulling cockpit code changes — the running server serves
+`dashboard.html` fresh per request, but `dashboard.py` changes need the
+restart.

@@ -68,7 +68,9 @@ The cockpit (`http://127.0.0.1:8765`, localhost-only) polls the same
 `data/jobs.json` the agents write, so a running pipeline animates live:
 jobs flash as they pass the gate, drafts appear for review, and outcome
 buttons record what the human did. It launches runs but submits nothing —
-the trust boundary holds at every surface.
+the trust boundary holds at every surface. It can also run as an always-on
+login service so the URL is permanently available — see
+[docs/scheduling.md](docs/scheduling.md).
 
 ## Two run surfaces, one state
 
