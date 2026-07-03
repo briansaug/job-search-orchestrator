@@ -2,6 +2,26 @@
 
 Project context for Claude Code — read this first.
 
+## Next session — pick up here (handoff written 2026-07-02, end of session)
+
+1. **ASK BRIAN FIRST — the orchestration overhaul.** He said he's
+   considering an overhaul of the agent because "the flow of it could be
+   better." If he doesn't raise it himself, ask at the start of the
+   session. Before proposing designs, get HIS diagnosis: what feels wrong
+   with the current flow (scout → score gate → research → draft → briefing)?
+   Then decide together whether the overhaul comes before or after the
+   questionnaire.
+2. **Run the intake questionnaire with him** — `/jobops-intake` (starts at
+   P0, goals & readiness; ~6 questions, one phase per sitting). Session A
+   shipped the skill, profile v2 template, and facts/contacts ledgers; his
+   real profile still has v1 `[FILL IN]`s until intake runs.
+3. **After those:** build order B–F in `docs/capability-roadmap.md`
+   (B = referral lane: referral-pathfinder + outreach-drafter + `/outreach`).
+
+Working style: Brian is a non-coder — you code, he decides; teach the
+why/what (exam-pitched). He expects strong visual craft on anything
+user-facing (see cockpit's copper/Space Grotesk identity — match it).
+
 ## What this is
 
 JobOps: Brian Bruner's multi-agent job-search orchestrator, targeting an
@@ -58,8 +78,17 @@ the gates in `config/search_profile.yaml` (≥7 qualified / 5–6 borderline /
   Brian has NOT yet run the questionnaire — profile still has `[FILL IN]`s.
   Also shipped: local web cockpit — `.venv/bin/python -m jobops dashboard`
   → http://127.0.0.1:8765 (live kanban polling jobs.json, draft viewer,
-  run buttons for scout/process/daily, mark-outcome recording; the `daily`
-  subprocess strips ANTHROPIC_API_KEY to preserve subscription auth).
+  run buttons for scout/process/daily with a Sonnet 5 / Opus 4.8 model
+  picker, mark-outcome recording; the `daily` subprocess strips
+  ANTHROPIC_API_KEY to preserve subscription auth). Cockpit runs always-on
+  via LaunchAgent `com.brianbruner.jobops-cockpit` (restart after
+  dashboard.py changes: `launchctl kickstart -k gui/501/com.brianbruner.jobops-cockpit`);
+  it also renders in Claude Code's preview panel via `.claude/launch.json`
+  ("cockpit"). Design language: copper #e8a566 on near-black, Space
+  Grotesk display + IBM Plex Mono data — keep new UI consistent. Default
+  model everywhere is `claude-sonnet-5` (8AM cron pinned via --model in
+  its plist); `claude-opus-4-8` is the quality override. 20 jobs tracked;
+  14 unscored in `scouted` awaiting a process run.
 - First live run: 8 postings tracked. **Nimble Gravity — AI Enablement &
   Adoption Manager (9/10, drafted, near submission-ready)**; borderlines
   Accenture-Austin + Glean await Brian's pursue/pass; 4 Anthropic roles
